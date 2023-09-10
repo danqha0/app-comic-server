@@ -13,7 +13,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 100))
   async uploadChapter(
     @UploadedFiles() files: Express.Multer.File[],
     @Body('title')

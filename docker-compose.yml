@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - db_network
+
+  nestjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: comic
+    ports:
+      - 2001:2001
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    networks:
+      - db_network
+
+volumes:
+  mongodata:
+
+networks:
+  db_network:
