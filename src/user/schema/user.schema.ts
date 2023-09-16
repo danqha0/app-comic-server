@@ -1,8 +1,8 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
-import { Comic } from '../../database/schema/comic.schema';
-import { Author } from '../../database/schema/author.schema';
+import { Comic } from '../../comic/schema/comic.schema';
+import { Author } from '../../author/schema/author.schema';
 
 export type UserDocument = User & Document;
 @Schema({

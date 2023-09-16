@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { User } from '../../user/schema/user.schema';
-import { CommentSche } from './comment.schema';
+import { CommentSche } from '../../comment/schema/comment.schema';
 
 @Schema({
   timestamps: true,
@@ -21,6 +21,9 @@ export class Chapter {
 
   @Prop({ type: mongoose.Schema.ObjectId, ref: 'Comment' })
   comment: CommentSche[];
+
+  @Prop({ default: 0, min: 0 })
+  view: number;
 }
 
 export const ChapterSchema = SchemaFactory.createForClass(Chapter);

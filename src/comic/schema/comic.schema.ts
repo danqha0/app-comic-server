@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { Chapter } from './chapter.schema';
+import { Chapter } from '../../chapter/schema/chapter.schema';
 
 enum Genre {
   Action = 'Action',
@@ -32,6 +32,12 @@ export class Comic {
   @Prop()
   description: string;
 
+  @Prop({ required: true })
+  thumbImg: string;
+
+  @Prop({ required: true })
+  avatarComicImg: string;
+
   @Prop({ type: mongoose.Schema.ObjectId, ref: 'Chapter' })
   chapters: Chapter[];
 
@@ -40,9 +46,6 @@ export class Comic {
 
   @Prop({ type: String, enum: Genre })
   type: Genre;
-
-  @Prop({ default: 0, min: 0 })
-  view: number;
 }
 
 export const ComicSchema = SchemaFactory.createForClass(Comic);

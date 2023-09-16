@@ -8,6 +8,10 @@ import { AdminModule } from './admin/admin.module';
 import { UserModule } from './user/user.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
+import { AuthorModule } from './author/author.module';
+import { ChapterModule } from './chapter/chapter.module';
+import { ComicModule } from './comic/comic.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -18,6 +22,10 @@ import { AuthModule } from './auth/auth.module';
     UserModule,
     DatabaseModule,
     AuthModule,
+    AuthorModule,
+    ChapterModule,
+    ComicModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
