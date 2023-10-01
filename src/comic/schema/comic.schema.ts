@@ -2,6 +2,8 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Chapter } from '../../chapter/schema/chapter.schema';
 
+export type ComicDocument = Comic & Document;
+
 enum Genre {
   Action = 'Action',
   Comedy = 'Comedy',
@@ -49,5 +51,3 @@ export class Comic {
 }
 
 export const ComicSchema = SchemaFactory.createForClass(Comic);
-
-export type UserDocument = Comic & Document;

@@ -4,6 +4,6 @@ import { ComicController } from './comic.controller';
 
 @Module({
   providers: [ComicService],
-  controllers: [ComicController]
+  controllers: [ComicController],
 })
 export class ComicModule {}

@@ -9,7 +9,16 @@ export type UserDocument = User & Document;
   timestamps: true,
 })
 export class User {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  })
+  _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
+
   @Prop({ required: true, unique: true, lowercase: true })
+  username: string;
+
+  @Prop({ unique: true, lowercase: true })
   email: string;
 
   @Prop()

@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthDto } from './dto/auth.dto';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -13,12 +18,16 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
   async signUp(createUserDto: CreateUserDto): Promise<any> {
     // Check if user exists
-    const userExists = await this.userService.findByUsername(
+    const userExistsUsername = await this.userService.findByUsername(
+      createUserDto.username,
+    );
+    const userExistsEmail = await this.userService.findByEmail(
       createUserDto.email,
     );
-    if (userExists) {
+    if (userExistsUsername || userExistsEmail) {
       throw new BadRequestException('User already exists');
     }
 
@@ -35,17 +44,17 @@ export class AuthService {
 
   async signIn(data: AuthDto) {
     // Check if user exists
-    const user = await this.userService.findByUsername(data.email);
-    if (!user) throw new BadRequestException('User does not exist');
+    const user = await this.userService.findByUsername(data.username);
+    if (!user) throw new UnauthorizedException('User does not exist');
     const passwordMatches = await argon2.verify(user.password, data.password);
     if (!passwordMatches)
-      throw new BadRequestException('Password is incorrect');
+      throw new UnauthorizedException('Password is incorrect');
     const tokens = await this.getTokens(user._id, user.email);
     await this.updateRefreshToken(user._id, tokens.refreshToken);
     return tokens;
   }
 
-  async logout(userId: string) {
+  async logout(userId: mongoose.Types.ObjectId) {
     return this.userService.update(userId, { refreshToken: null });
   }
 
@@ -53,14 +62,17 @@ export class AuthService {
     return await argon2.hash(data);
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string) {
+  async updateRefreshToken(
+    userId: mongoose.Types.ObjectId,
+    refreshToken: string,
+  ) {
     const hashedRefreshToken = await this.hashData(refreshToken);
     await this.userService.update(userId, {
       refreshToken: hashedRefreshToken,
     });
   }
 
-  async getTokens(userId: string, username: string) {
+  async getTokens(userId: mongoose.Types.ObjectId, username: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
