@@ -1,6 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { Chapter } from '../../chapter/schema/chapter.schema';
 
 export type ComicDocument = Comic & Document;
 
@@ -23,11 +22,21 @@ enum Genre {
   Sports = 'Sports',
   All_Ages = 'All Ages',
 }
+interface Rate {
+  rate: number;
+  userId: mongoose.Types.ObjectId;
+}
 
 @Schema({
   timestamps: true,
 })
 export class Comic {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  })
+  _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
+
   @Prop({ required: true })
   title: string;
 
@@ -37,17 +46,28 @@ export class Comic {
   @Prop({ required: true })
   thumbImg: string;
 
-  @Prop({ required: true })
-  avatarComicImg: string;
+  @Prop({ type: [String], required: true })
+  previewImg: [string];
 
-  @Prop({ type: mongoose.Schema.ObjectId, ref: 'Chapter' })
-  chapters: Chapter[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' }] })
+  chapters: [mongoose.Schema.Types.ObjectId];
 
-  @Prop({ type: [{ type: Number, default: 0, min: 0, max: 5 }] })
-  rate: number[];
+  @Prop({
+    type: [
+      { type: Number, default: 0, min: 0, max: 5 },
+      { type: mongoose.Types.ObjectId, default: null, ref: 'User' },
+    ],
+  })
+  rate: Rate[];
 
-  @Prop({ type: String, enum: Genre })
-  type: Genre;
+  @Prop({ type: String, enum: Genre, required: true })
+  genre: Genre;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }] })
+  comment: [mongoose.Schema.Types.ObjectId];
+
+  @Prop({ default: 0, min: 0 })
+  totalViews: number;
 }
 
 export const ComicSchema = SchemaFactory.createForClass(Comic);

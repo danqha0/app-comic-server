@@ -9,6 +9,12 @@ export type AuthorDocument = Author & Document;
   timestamps: true,
 })
 export class Author {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  })
+  _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
+
   @Prop({ required: true })
   name: string;
 
@@ -18,7 +24,10 @@ export class Author {
   @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'User' }] })
   followers: User[];
 
-  @Prop()
+  @Prop({
+    default:
+      'https://res.cloudinary.com/dnsskwfqr/image/upload/v1690290724/qnqp6t87xiexxxmu814e.webp',
+  })
   avata: string;
 }
 

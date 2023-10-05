@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
-import { CreateUserDto, LoginUserDto } from './dto/user.dto';
+import { CreateUserDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './schema/user.schema';
 import * as mongoose from 'mongoose';
@@ -11,53 +14,80 @@ import * as mongoose from 'mongoose';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const saltOrRounds = Number(process.env.SALT_OR_ROUNDS);
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
+    try {
+      const newUser = new this.userModel({
+        ...createUserDto,
+      });
 
-    const hashPassword = await bcrypt.hash(
-      createUserDto.password,
-      saltOrRounds,
-    );
-
-    const newUser = new this.userModel({
-      ...createUserDto,
-      password: hashPassword,
-    });
-
-    const createdUser = await newUser.save();
-    return createdUser;
-  }
-
-  async login(loginUser: LoginUserDto): Promise<UserDocument> {
-    return this.userModel.findOne(loginUser);
+      return await newUser.save();
+    } catch (error) {
+      throw new BadRequestException('Error creating user');
+    }
   }
 
   async findAll(): Promise<UserDocument[]> {
-    return this.userModel.find().exec();
+    try {
+      return await this.userModel.find().exec();
+    } catch (error) {
+      throw new NotFoundException('Error fetching users');
+    }
   }
 
-  async findById(id: mongoose.Types.ObjectId): Promise<UserDocument> {
-    return this.userModel.findById(id);
+  async findById(id: mongoose.Types.ObjectId): Promise<UserDocument | null> {
+    try {
+      const user = await this.userModel.findById(id).exec();
+      if (!user) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      throw new NotFoundException('User not found');
+    }
   }
 
-  async findByUsername(username: string): Promise<UserDocument> {
-    return this.userModel.findOne({ username }).exec();
+  async findByUsername(username: string): Promise<UserDocument | null> {
+    try {
+      return await this.userModel.findOne({ username }).exec();
+    } catch (error) {
+      throw new NotFoundException('Error fetching user by username');
+    }
   }
 
-  async findByEmail(email: string): Promise<UserDocument> {
-    return this.userModel.findOne({ email }).exec();
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    try {
+      return await this.userModel.findOne({ email }).exec();
+    } catch (error) {
+      throw new NotFoundException('Error fetching user by email');
+    }
   }
 
   async update(
     id: mongoose.Types.ObjectId,
     updateUserDto: UpdateUserDto | any,
-  ): Promise<UserDocument> {
-    return this.userModel
-      .findByIdAndUpdate(id, updateUserDto, { new: true })
-      .exec();
+  ): Promise<UserDocument | null> {
+    try {
+      const user = await this.userModel
+        .findByIdAndUpdate(id, updateUserDto, { new: true })
+        .exec();
+      if (!user) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      throw new NotFoundException('User not found');
+    }
   }
 
-  async remove(id: mongoose.Types.ObjectId): Promise<UserDocument> {
-    return this.userModel.findByIdAndDelete(id).exec();
+  async remove(id: mongoose.Types.ObjectId): Promise<UserDocument | null> {
+    try {
+      const user = await this.userModel.findByIdAndDelete(id).exec();
+      if (!user) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      throw new NotFoundException('User not found');
+    }
   }
 }

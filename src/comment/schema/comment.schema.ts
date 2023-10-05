@@ -6,6 +6,12 @@ import { User } from '../../user/schema/user.schema';
   timestamps: true,
 })
 export class CommentSche {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  })
+  _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
+
   @Prop({ type: mongoose.Schema.ObjectId, ref: 'User' })
   userId: User;
 

@@ -1,12 +1,16 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { User } from '../../user/schema/user.schema';
-import { CommentSche } from '../../comment/schema/comment.schema';
 
 @Schema({
   timestamps: true,
 })
 export class Chapter {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  })
+  _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
+
   @Prop([String])
   image: string[];
 
@@ -16,11 +20,11 @@ export class Chapter {
   @Prop({ required: true })
   titleChapter: string;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
-  like: User[];
+  @Prop({ required: true })
+  thumbChapter: string;
 
-  @Prop({ type: mongoose.Schema.ObjectId, ref: 'Comment' })
-  comment: CommentSche[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
+  like: [mongoose.Schema.Types.ObjectId];
 
   @Prop({ default: 0, min: 0 })
   view: number;
@@ -28,4 +32,4 @@ export class Chapter {
 
 export const ChapterSchema = SchemaFactory.createForClass(Chapter);
 
-export type UserDocument = Chapter & Document;
+export type ChapterDocument = Chapter & Document;

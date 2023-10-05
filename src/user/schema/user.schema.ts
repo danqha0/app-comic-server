@@ -1,9 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
-import { Comic } from '../../comic/schema/comic.schema';
-import { Author } from '../../author/schema/author.schema';
-
 export type UserDocument = User & Document;
 @Schema({
   timestamps: true,
@@ -28,13 +25,22 @@ export class User {
   coin: number;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comic' }] })
-  like: Comic[];
+  like: [mongoose.Types.ObjectId];
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Author' }] })
-  subscribe: Author[];
+  subscribe: [mongoose.Types.ObjectId];
 
   @Prop({ default: false })
   vip: boolean;
+
+  @Prop({
+    default:
+      'https://res.cloudinary.com/dnsskwfqr/image/upload/v1690290724/qnqp6t87xiexxxmu814e.webp',
+  })
+  avata: string;
+
+  @Prop({ default: true })
+  isActive: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -5,10 +5,9 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
-import * as argon2 from 'argon2';
+import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { AuthDto } from './dto/auth.dto';
+import { LoginUserDto } from './dto/auth.dto';
 import * as mongoose from 'mongoose';
 
 @Injectable()
@@ -16,42 +15,54 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    private configService: ConfigService,
   ) {}
 
   async signUp(createUserDto: CreateUserDto): Promise<any> {
-    // Check if user exists
-    const userExistsUsername = await this.userService.findByUsername(
-      createUserDto.username,
-    );
-    const userExistsEmail = await this.userService.findByEmail(
-      createUserDto.email,
-    );
-    if (userExistsUsername || userExistsEmail) {
-      throw new BadRequestException('User already exists');
-    }
+    try {
+      // Check if user exists
+      const userExistsUsername = await this.userService.findByUsername(
+        createUserDto.username,
+      );
+      const userExistsEmail = await this.userService.findByEmail(
+        createUserDto.email,
+      );
 
-    // Hash password
-    const hash = await this.hashData(createUserDto.password);
-    const newUser = await this.userService.create({
-      ...createUserDto,
-      password: hash,
-    });
-    const tokens = await this.getTokens(newUser._id, newUser.email);
-    await this.updateRefreshToken(newUser._id, tokens.refreshToken);
-    return tokens;
+      if (userExistsUsername || userExistsEmail) {
+        throw new BadRequestException('User already exists');
+      }
+
+      // Hash password
+      const hash = await this.hashData(createUserDto.password);
+      const newUser = await this.userService.create({
+        ...createUserDto,
+        password: hash,
+      });
+      const tokens = await this.getTokens(newUser._id, newUser.email);
+      await this.updateRefreshToken(newUser._id, tokens.refreshToken);
+      return tokens;
+    } catch (error) {
+      throw new BadRequestException('Register Fail');
+    }
   }
 
-  async signIn(data: AuthDto) {
-    // Check if user exists
-    const user = await this.userService.findByUsername(data.username);
-    if (!user) throw new UnauthorizedException('User does not exist');
-    const passwordMatches = await argon2.verify(user.password, data.password);
-    if (!passwordMatches)
-      throw new UnauthorizedException('Password is incorrect');
-    const tokens = await this.getTokens(user._id, user.email);
-    await this.updateRefreshToken(user._id, tokens.refreshToken);
-    return tokens;
+  async signIn(data: LoginUserDto) {
+    try {
+      // Check if user exists
+      const user = await this.userService.findByUsername(data.username);
+      if (!user)
+        throw new UnauthorizedException('Username or Password is incorrect');
+      const passwordMatches = await bcrypt.compareSync(
+        data.password,
+        user.password,
+      );
+      if (!passwordMatches)
+        throw new UnauthorizedException('Username or Password is incorrect');
+      const tokens = await this.getTokens(user._id, user.email);
+      await this.updateRefreshToken(user._id, tokens.refreshToken);
+      return tokens;
+    } catch (error) {
+      throw new UnauthorizedException('Username or Password is incorrect');
+    }
   }
 
   async logout(userId: mongoose.Types.ObjectId) {
@@ -59,7 +70,7 @@ export class AuthService {
   }
 
   async hashData(data: string) {
-    return await argon2.hash(data);
+    return await bcrypt.hash(data, Number(process.env.SALT_OR_ROUNDS));
   }
 
   async updateRefreshToken(
@@ -76,26 +87,25 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
-          sub: userId,
+          id: userId,
           username,
         },
         {
-          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
+          secret: process.env.JWT_SECRET_ACCESS_TOKEN,
+          expiresIn: '7d',
         },
       ),
       this.jwtService.signAsync(
         {
-          sub: userId,
+          id: userId,
           username,
         },
         {
-          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+          secret: process.env.JWT_SECRET_REFRESH_TOKEN,
           expiresIn: '7d',
         },
       ),
     ]);
-
     return {
       accessToken,
       refreshToken,

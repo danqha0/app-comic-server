@@ -3,6 +3,7 @@ import {
   Injectable,
   MaxFileSizeValidator,
   ParseFilePipe,
+  UploadedFile,
   UploadedFiles,
 } from '@nestjs/common';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
@@ -11,7 +12,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 export class AdminService {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
 
-  async uploadImage(
+  async uploadImages(
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -23,8 +24,23 @@ export class AdminService {
     files: Express.Multer.File[],
   ) {
     const cloudinaryResponse = await Promise.all(
-      files.map((file) => this.cloudinaryService.uploadFile(file)),
+      files?.map((file) => this.cloudinaryService.uploadFile(file)),
     );
+    return cloudinaryResponse;
+  }
+
+  async uploadImage(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 50 }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const cloudinaryResponse = await this.cloudinaryService.uploadFile(file);
     return cloudinaryResponse;
   }
 }

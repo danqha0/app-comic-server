@@ -8,30 +8,35 @@ import { User } from 'src/user/schema/user.schema';
 @Injectable()
 export class AuthorService {
   constructor(
-    @InjectModel(Author.name) private userModel: mongoose.Model<AuthorDocument>,
+    @InjectModel(Author.name)
+    private authorModel: mongoose.Model<AuthorDocument>,
   ) {}
 
   async create(createUserDto: CreateAuthorDto): Promise<AuthorDocument> {
-    const createdUser = await new this.userModel(createUserDto).save();
+    const createdUser = await new this.authorModel(createUserDto).save();
     return createdUser;
+  }
+
+  async findById(id: mongoose.Types.ObjectId): Promise<AuthorDocument> {
+    return this.authorModel.findById(id);
   }
 
   async update(
     id: string,
     updateUserDto: UpdateAuthorDto | any,
   ): Promise<AuthorDocument> {
-    return this.userModel
+    return this.authorModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();
   }
 
   async getAllSeries(id: string): Promise<Comic[]> {
-    const data = await this.userModel.findById(id).exec();
+    const data = await this.authorModel.findById(id).exec();
     return data.series;
   }
 
   async getAllFollowers(id: string): Promise<User[]> {
-    const data = await this.userModel.findById(id).exec();
+    const data = await this.authorModel.findById(id).exec();
     return data.followers;
   }
 }
