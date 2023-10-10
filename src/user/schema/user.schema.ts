@@ -7,7 +7,7 @@ export type UserDocument = User & Document;
 })
 export class User {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   })
   _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
@@ -24,10 +24,10 @@ export class User {
   @Prop({ default: 0, min: 0 })
   coin: number;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comic' }] })
-  like: [mongoose.Types.ObjectId];
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Author' }] })
+  follow: [mongoose.Types.ObjectId];
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Author' }] })
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Comic' }] })
   subscribe: [mongoose.Types.ObjectId];
 
   @Prop({ default: false })
@@ -37,7 +37,7 @@ export class User {
     default:
       'https://res.cloudinary.com/dnsskwfqr/image/upload/v1690290724/qnqp6t87xiexxxmu814e.webp',
   })
-  avata: string;
+  avatar: string;
 
   @Prop({ default: true })
   isActive: boolean;

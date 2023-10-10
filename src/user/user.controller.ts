@@ -6,7 +6,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  Post,
+  Request,
+  Res,
+  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
+import { Response } from 'express';
 
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -42,5 +48,32 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(new mongoose.Types.ObjectId(id));
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/subscribe')
+  async subscribeComic(
+    @Request() req,
+    @Body('id') comicId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const subscriber = await this.usersService.subscribe(
+        new mongoose.Types.ObjectId(req.user.id),
+        comicId,
+      );
+
+      return res.status(HttpStatus.OK).json(subscriber);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message,
+        });
+      } else {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: 'Something went wrong',
+        });
+      }
+    }
   }
 }

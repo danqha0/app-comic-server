@@ -3,8 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Author, AuthorDocument } from './schema/author.schema';
 import * as mongoose from 'mongoose';
 import { CreateAuthorDto, UpdateAuthorDto } from './dto/author.dto';
-import { Comic } from 'src/comic/schema/comic.schema';
-import { User } from 'src/user/schema/user.schema';
 @Injectable()
 export class AuthorService {
   constructor(
@@ -21,6 +19,10 @@ export class AuthorService {
     return this.authorModel.findById(id);
   }
 
+  async findByAll(): Promise<AuthorDocument[]> {
+    return this.authorModel.find();
+  }
+
   async update(
     id: string,
     updateUserDto: UpdateAuthorDto | any,
@@ -30,12 +32,12 @@ export class AuthorService {
       .exec();
   }
 
-  async getAllSeries(id: string): Promise<Comic[]> {
+  async getAllSeries(id: string): Promise<[mongoose.Types.ObjectId]> {
     const data = await this.authorModel.findById(id).exec();
     return data.series;
   }
 
-  async getAllFollowers(id: string): Promise<User[]> {
+  async getAllFollowers(id: string): Promise<[mongoose.Types.ObjectId]> {
     const data = await this.authorModel.findById(id).exec();
     return data.followers;
   }

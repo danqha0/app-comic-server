@@ -10,7 +10,7 @@ export type AdminDocument = Admin & Document;
 })
 export class Admin {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   })
   _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
@@ -27,10 +27,10 @@ export class Admin {
   @Prop({ default: 0, min: 0 })
   coin: number;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comic' }] })
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Comic' }] })
   like: Comic[];
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Author' }] })
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Author' }] })
   subscribe: Author[];
 
   @Prop({ default: false })

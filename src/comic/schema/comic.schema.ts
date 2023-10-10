@@ -32,7 +32,7 @@ interface Rate {
 })
 export class Comic {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   })
   _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
@@ -49,8 +49,8 @@ export class Comic {
   @Prop({ type: [String], required: true })
   previewImg: [string];
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' }] })
-  chapters: [mongoose.Schema.Types.ObjectId];
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Chapter' }] })
+  chapters: [mongoose.Types.ObjectId];
 
   @Prop({
     type: [
@@ -63,10 +63,10 @@ export class Comic {
   @Prop({ type: String, enum: Genre, required: true })
   genre: Genre;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }] })
-  comment: [mongoose.Schema.Types.ObjectId];
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Comment' }] })
+  comment: [mongoose.Types.ObjectId];
 
-  @Prop({ default: 0, min: 0 })
+  @Prop()
   totalViews: number;
 }
 

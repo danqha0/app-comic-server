@@ -1,25 +1,24 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { User } from '../../user/schema/user.schema';
 
 @Schema({
   timestamps: true,
 })
 export class CommentSche {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   })
   _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
 
-  @Prop({ type: mongoose.Schema.ObjectId, ref: 'User' })
-  userId: User;
+  @Prop({ type: mongoose.Types.ObjectId, ref: 'User' })
+  userId: mongoose.Types.ObjectId;
 
-  @Prop()
+  @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Owner' }] })
-  userLikes: User[];
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Owner' }] })
+  userLikes: [mongoose.Types.ObjectId];
 }
 
 export const CommentSchema = SchemaFactory.createForClass(CommentSche);

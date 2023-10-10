@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 })
 export class Chapter {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   })
   _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
@@ -23,8 +23,8 @@ export class Chapter {
   @Prop({ required: true })
   thumbChapter: string;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
-  like: [mongoose.Schema.Types.ObjectId];
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'User' }] })
+  like: [mongoose.Types.ObjectId];
 
   @Prop({ default: 0, min: 0 })
   view: number;

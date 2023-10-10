@@ -39,12 +39,10 @@ export class AdminController {
     @Res() res: Response,
   ) {
     try {
-      const thumbImage = files.find((file) => file.fieldname === 'thumb');
-      const previewImages = Array.from(
-        files.filter((file) => file.fieldname === 'preview'),
-      );
-
-      const thumbImageAll = await this.adminService.uploadImage(thumbImage);
+      console.log(files);
+      const thumbImage = files['thumb'];
+      const previewImages = files['preview'];
+      const thumbImageAll = await this.adminService.uploadImage(thumbImage[0]);
       const previewImagesAll =
         await this.adminService.uploadImages(previewImages);
 
@@ -56,6 +54,7 @@ export class AdminController {
 
       return res.status(HttpStatus.OK).json(newComic);
     } catch (error) {
+      console.log(error.message);
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           message: error.message,
@@ -71,8 +70,8 @@ export class AdminController {
   @Post('addchapter')
   @UseInterceptors(
     FileFieldsInterceptor([
-      { name: 'images', maxCount: 100 },
-      { name: 'thumb', maxCount: 1 },
+      { name: 'images', maxCount: 10 },
+      { name: 'thumbChapter', maxCount: 1 },
     ]),
   )
   async uploadChapter(
@@ -82,25 +81,32 @@ export class AdminController {
     @Res() res: Response,
   ) {
     try {
-      const thumbImage = files.find((file) => file.fieldname === 'thumb');
-      const previewImages = Array.from(
-        files.filter((file) => file.fieldname === 'images'),
+      const thumbImageFile = files['thumbChapter'];
+      const imagesChapterFile = files['images'];
+
+      const thumbImageChapter = await this.adminService.uploadImage(
+        thumbImageFile[0],
       );
 
-      const thumbImageAll = await this.adminService.uploadImage(thumbImage);
-      const previewImagesAll =
-        await this.adminService.uploadImages(previewImages);
+      const imagesChapter =
+        await this.adminService.uploadImages(imagesChapterFile);
 
       const newChapter = await this.chapterService.createChapter({
         ...data,
-        thumbChapter: thumbImageAll.secure_url,
-        image: previewImagesAll.map((image) => image.secure_url),
+        thumbChapter: thumbImageChapter.secure_url,
+        image: imagesChapter.map((image) => image.secure_url),
         like: [],
         view: 0,
       });
 
+      await this.comicService.saveComic(
+        new mongoose.Types.ObjectId(data.idComic),
+        newChapter._id,
+      );
+
       return res.status(HttpStatus.OK).json(newChapter);
     } catch (error) {
+      console.log(error.message);
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           message: error.message,

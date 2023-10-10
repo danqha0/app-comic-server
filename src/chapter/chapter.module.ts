@@ -8,7 +8,8 @@ import { Chapter, ChapterSchema } from './schema/chapter.schema';
   imports: [
     MongooseModule.forFeature([{ name: Chapter.name, schema: ChapterSchema }]),
   ],
-  providers: [ChapterService],
   controllers: [ChapterController],
+  providers: [ChapterService],
+  exports: [ChapterService],
 })
 export class ChapterModule {}

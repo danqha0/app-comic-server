@@ -3,12 +3,12 @@ import { ComicService } from './comic.service';
 import { ComicController } from './comic.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Comic, ComicSchema } from './schema/comic.schema';
-import { AdminModule } from 'src/admin/admin.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { ChapterModule } from 'src/chapter/chapter.module';
 
 @Module({
   imports: [
-    AdminModule,
+    ChapterModule,
     CloudinaryModule,
     MongooseModule.forFeature([{ name: Comic.name, schema: ComicSchema }]),
   ],

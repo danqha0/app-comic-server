@@ -85,9 +85,35 @@ export class UserService {
       if (!user) {
         return null;
       }
+      user.isActive = false;
+      await user.save();
       return user;
     } catch (error) {
       throw new NotFoundException('User not found');
+    }
+  }
+
+  async subscribe(userId: mongoose.Types.ObjectId, comicID: string) {
+    try {
+      const user = await this.userModel.findOne({ _id: userId });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const subscribeIndex = user.subscribe.findIndex(
+        (comic) => comic.toString() === comicID,
+      );
+
+      if (subscribeIndex >= 0) {
+        user.subscribe.splice(subscribeIndex, 1);
+      } else {
+        user.subscribe.push(new mongoose.Types.ObjectId(comicID));
+      }
+
+      const updateUser = await user.save();
+      return updateUser;
+    } catch (error) {
+      throw new BadRequestException('Error subscribing to comic');
     }
   }
 }

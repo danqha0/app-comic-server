@@ -3,9 +3,8 @@ import { PartialType } from '@nestjs/mapped-types';
 
 export class PostChapterComicDto {
   @IsNotEmpty() titleChapter: string;
-  @IsNotEmpty() description: string;
-  @IsNotEmpty()
-  chapterNumber: number;
+  @IsNotEmpty() chapterNumber: number;
+  @IsNotEmpty() idComic: string;
 }
 
 export class CreateChapterDto {

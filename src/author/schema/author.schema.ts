@@ -1,7 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { Comic } from '../../comic/schema/comic.schema';
-import { User } from '../../user/schema/user.schema';
 
 export type AuthorDocument = Author & Document;
 
@@ -10,7 +8,7 @@ export type AuthorDocument = Author & Document;
 })
 export class Author {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
   })
   _id: mongoose.Types.ObjectId; // Thêm trường _id vào schema
@@ -19,10 +17,10 @@ export class Author {
   name: string;
 
   @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Comic' }] })
-  series: Comic[];
+  series: [mongoose.Types.ObjectId];
 
   @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'User' }] })
-  followers: User[];
+  followers: [mongoose.Types.ObjectId];
 
   @Prop({
     default:

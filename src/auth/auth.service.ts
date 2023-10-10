@@ -39,7 +39,7 @@ export class AuthService {
       });
       const tokens = await this.getTokens(newUser._id, newUser.email);
       await this.updateRefreshToken(newUser._id, tokens.refreshToken);
-      return tokens;
+      return { ...newUser, ...tokens };
     } catch (error) {
       throw new BadRequestException('Register Fail');
     }
@@ -59,7 +59,7 @@ export class AuthService {
         throw new UnauthorizedException('Username or Password is incorrect');
       const tokens = await this.getTokens(user._id, user.email);
       await this.updateRefreshToken(user._id, tokens.refreshToken);
-      return tokens;
+      return { ...user, ...tokens };
     } catch (error) {
       throw new UnauthorizedException('Username or Password is incorrect');
     }

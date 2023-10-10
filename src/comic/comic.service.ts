@@ -21,6 +21,24 @@ export class ComicService {
       const createdComic = await newComic.save();
       return createdComic;
     } catch (err) {
+      console.log(err.message);
+      throw new BadRequestException('Create Comic Fail');
+    }
+  }
+
+  async saveComic(
+    id: mongoose.Types.ObjectId,
+    chapterId: mongoose.Types.ObjectId,
+  ) {
+    try {
+      const comic = await this.comicModel.findById(id);
+      if (!comic) {
+        throw new BadRequestException('Comic not found');
+      }
+      comic.chapters.push(chapterId);
+      await comic.save();
+    } catch (err) {
+      console.log(err.message);
       throw new BadRequestException('Create Comic Fail');
     }
   }
