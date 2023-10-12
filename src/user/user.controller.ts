@@ -24,15 +24,46 @@ export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @UseGuards(AccessTokenGuard)
-  @Get()
+  @Get('/all')
   findAll() {
     return this.usersService.findAll();
   }
 
   @UseGuards(AccessTokenGuard)
-  @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.usersService.findById(new mongoose.Types.ObjectId(id));
+  @Get('')
+  async findById(@Request() req, @Res() res: Response) {
+    try {
+      const user = await this.usersService.findById(
+        new mongoose.Types.ObjectId(req.user.id),
+      );
+
+      return res.status(HttpStatus.OK).json({
+        _id: user._id,
+        username: user.username,
+        name: user.name,
+        password: user.password,
+        coin: user.coin,
+        follow: user.follow,
+        subscribe: user.subscribe,
+        vip: user.vip,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        email: user.email,
+        accessToken: '',
+        refreshToken: '',
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message,
+        });
+      } else {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: 'Something went wrong',
+        });
+      }
+    }
+    return;
   }
 
   @UseGuards(AccessTokenGuard)

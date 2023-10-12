@@ -28,7 +28,7 @@ export class UserService {
 
   async findAll(): Promise<UserDocument[]> {
     try {
-      return await this.userModel.find().exec();
+      return await this.userModel.find({}, '-createdAt -updatedAt -__v').exec();
     } catch (error) {
       throw new NotFoundException('Error fetching users');
     }
@@ -36,7 +36,9 @@ export class UserService {
 
   async findById(id: mongoose.Types.ObjectId): Promise<UserDocument | null> {
     try {
-      const user = await this.userModel.findById(id).exec();
+      const user = await this.userModel
+        .findById(id, '-createdAt -updatedAt -__v')
+        .exec();
       if (!user) {
         return null;
       }
@@ -48,7 +50,9 @@ export class UserService {
 
   async findByUsername(username: string): Promise<UserDocument | null> {
     try {
-      return await this.userModel.findOne({ username }).exec();
+      return await this.userModel
+        .findOne({ username }, '-createdAt -updatedAt -__v')
+        .exec();
     } catch (error) {
       throw new NotFoundException('Error fetching user by username');
     }
@@ -95,7 +99,10 @@ export class UserService {
 
   async subscribe(userId: mongoose.Types.ObjectId, comicID: string) {
     try {
-      const user = await this.userModel.findOne({ _id: userId });
+      const user = await this.userModel.findOne(
+        { _id: userId },
+        '-createdAt -updatedAt -__v',
+      );
       if (!user) {
         throw new NotFoundException('User not found');
       }

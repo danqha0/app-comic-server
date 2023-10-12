@@ -34,12 +34,27 @@ export class AuthService {
       // Hash password
       const hash = await this.hashData(createUserDto.password);
       const newUser = await this.userService.create({
-        ...createUserDto,
+        name: createUserDto.name,
+        email: createUserDto.email,
+        username: createUserDto.username.toLocaleLowerCase(),
         password: hash,
       });
       const tokens = await this.getTokens(newUser._id, newUser.email);
       await this.updateRefreshToken(newUser._id, tokens.refreshToken);
-      return { ...newUser, ...tokens };
+      return {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        username: newUser.username,
+        password: newUser.password,
+        coin: newUser.coin,
+        follow: newUser.follow,
+        subscribe: newUser.subscribe,
+        vip: newUser.vip,
+        avatar: newUser.avatar,
+        isActive: newUser.isActive,
+        ...tokens,
+      };
     } catch (error) {
       throw new BadRequestException('Register Fail');
     }
@@ -59,7 +74,20 @@ export class AuthService {
         throw new UnauthorizedException('Username or Password is incorrect');
       const tokens = await this.getTokens(user._id, user.email);
       await this.updateRefreshToken(user._id, tokens.refreshToken);
-      return { ...user, ...tokens };
+      return {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        password: user.password,
+        coin: user.coin,
+        follow: user.follow,
+        subscribe: user.subscribe,
+        vip: user.vip,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        ...tokens,
+      };
     } catch (error) {
       throw new UnauthorizedException('Username or Password is incorrect');
     }
@@ -107,8 +135,8 @@ export class AuthService {
       ),
     ]);
     return {
-      accessToken,
-      refreshToken,
+      accessToken: `Bearer ${accessToken}`,
+      refreshToken: `Bearer ${refreshToken}`,
     };
   }
 }

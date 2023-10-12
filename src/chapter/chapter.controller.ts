@@ -28,7 +28,16 @@ export class ChapterController {
       await this.chapterService.increaseView(
         new mongoose.Types.ObjectId(params),
       );
-      return res.status(HttpStatus.OK).json(comic);
+      return res.status(HttpStatus.OK).json({
+        _id: comic._id,
+        image: comic.image,
+        chapterNumber: comic.chapterNumber,
+        titleChapter: comic.titleChapter,
+        thumbChapter: comic.thumbChapter,
+        view: comic.view,
+        like: comic.like,
+        comicId: params,
+      });
     } catch (error) {
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({

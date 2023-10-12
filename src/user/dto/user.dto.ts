@@ -12,10 +12,6 @@ export class CreateUserDto {
   @Length(6)
   @IsNotEmpty()
   password: string;
-
-  @Length(6)
-  @IsNotEmpty()
-  rePassword: string;
 }
 
 export class UpdateUserDto {

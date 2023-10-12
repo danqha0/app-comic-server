@@ -29,7 +29,10 @@ export class ChapterService {
 
   async getChapter(id: mongoose.Types.ObjectId): Promise<ChapterDocument> {
     try {
-      const chapter = await this.chapterModel.findOne({ _id: id });
+      const chapter = await this.chapterModel.findOne(
+        { _id: id },
+        '-createdAt -updatedAt -__v',
+      );
       if (!chapter) {
         throw new NotFoundException('Chapter not found');
       }
@@ -44,7 +47,10 @@ export class ChapterService {
   ): Promise<ChapterDocument[]> {
     const chapters = await Promise.all(
       ids.map(async (id) => {
-        const chapter = await this.chapterModel.findById(id);
+        const chapter = await this.chapterModel.findById(
+          id,
+          '-createdAt -updatedAt -__v',
+        );
         if (!chapter) {
           throw new NotFoundException(`Chapter not found for ID: ${id}`);
         }
@@ -59,7 +65,10 @@ export class ChapterService {
     id: mongoose.Types.ObjectId[],
   ): Promise<ChapterDocument[]> {
     try {
-      const chapters = await this.chapterModel.find(id);
+      const chapters = await this.chapterModel.find(
+        id,
+        '-createdAt -updatedAt -__v',
+      );
       return chapters;
     } catch (error) {
       throw new NotFoundException('Chapters not found');
@@ -68,7 +77,10 @@ export class ChapterService {
 
   async increaseView(id: mongoose.Types.ObjectId) {
     try {
-      const chapter = await this.chapterModel.findOne({ _id: id });
+      const chapter = await this.chapterModel.findOne(
+        { _id: id },
+        '-createdAt -updatedAt -__v',
+      );
       if (!chapter) {
         throw new NotFoundException('Chapter not found');
       }
@@ -81,7 +93,10 @@ export class ChapterService {
 
   async getView(id: mongoose.Types.ObjectId) {
     try {
-      const chapter = await this.chapterModel.findOne({ _id: id });
+      const chapter = await this.chapterModel.findOne(
+        { _id: id },
+        '-createdAt -updatedAt -__v',
+      );
       if (!chapter) {
         throw new NotFoundException('Chapter not found');
       }
@@ -93,7 +108,10 @@ export class ChapterService {
 
   async likeOrUnlike(id: mongoose.Types.ObjectId, userId: string) {
     try {
-      const chapter = await this.chapterModel.findOne({ _id: id });
+      const chapter = await this.chapterModel.findOne(
+        { _id: id },
+        '-createdAt -updatedAt -__v',
+      );
       if (!chapter) {
         throw new NotFoundException('Chapter not found');
       }
@@ -117,7 +135,10 @@ export class ChapterService {
 
   async deleteChapter(id: mongoose.Types.ObjectId) {
     try {
-      const chapter = await this.chapterModel.findOne({ _id: id });
+      const chapter = await this.chapterModel.findOne(
+        { _id: id },
+        '-createdAt -updatedAt -__v',
+      );
       if (!chapter) {
         throw new NotFoundException('Chapter not found');
       }

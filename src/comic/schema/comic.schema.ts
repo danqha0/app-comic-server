@@ -22,10 +22,6 @@ enum Genre {
   Sports = 'Sports',
   All_Ages = 'All Ages',
 }
-interface Rate {
-  rate: number;
-  userId: mongoose.Types.ObjectId;
-}
 
 @Schema({
   timestamps: true,
@@ -52,13 +48,21 @@ export class Comic {
   @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Chapter' }] })
   chapters: [mongoose.Types.ObjectId];
 
+  @Prop({ type: { type: mongoose.Types.ObjectId, ref: 'Author' } })
+  author: mongoose.Types.ObjectId;
+
   @Prop({
     type: [
       { type: Number, default: 0, min: 0, max: 5 },
       { type: mongoose.Types.ObjectId, default: null, ref: 'User' },
     ],
   })
-  rate: Rate[];
+  rate: [
+    {
+      rate: number;
+      userId: mongoose.Types.ObjectId;
+    },
+  ];
 
   @Prop({ type: String, enum: Genre, required: true })
   genre: Genre;
@@ -68,6 +72,9 @@ export class Comic {
 
   @Prop()
   totalViews: number;
+
+  @Prop()
+  totalRates: number;
 }
 
 export const ComicSchema = SchemaFactory.createForClass(Comic);
