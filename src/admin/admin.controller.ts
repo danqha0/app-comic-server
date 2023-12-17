@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   HttpStatus,
+  ParseFilePipeBuilder,
   Post,
   Res,
   UploadedFiles,
@@ -33,7 +34,18 @@ export class AdminController {
     ]),
   )
   async uploadComic(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'jpeg',
+        })
+        .addFileTypeValidator({
+          fileType: 'png',
+        })
+        .addMaxSizeValidator({ maxSize: 1000000 })
+        .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+    )
+    files: Express.Multer.File[],
     @Body()
     data: PostCreateComicDto,
     @Res() res: Response,
@@ -75,7 +87,18 @@ export class AdminController {
     ]),
   )
   async uploadChapter(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'jpeg',
+        })
+        .addFileTypeValidator({
+          fileType: 'png',
+        })
+        .addMaxSizeValidator({ maxSize: 1000000 })
+        .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+    )
+    files: Express.Multer.File[],
     @Body()
     data: PostChapterComicDto,
     @Res() res: Response,
