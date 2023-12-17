@@ -107,4 +107,31 @@ export class UserController {
       }
     }
   }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/resetpasssord')
+  async resetPassword(
+    @Request() req,
+    @Body('id') comicId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const subscriber = await this.usersService.subscribe(
+        new mongoose.Types.ObjectId(req.user.id),
+        comicId,
+      );
+
+      return res.status(HttpStatus.OK).json(subscriber);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message,
+        });
+      } else {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: 'Something went wrong',
+        });
+      }
+    }
+  }
 }

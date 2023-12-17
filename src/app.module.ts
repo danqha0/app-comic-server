@@ -12,6 +12,7 @@ import { ChapterModule } from './chapter/chapter.module';
 import { ComicModule } from './comic/comic.module';
 import { CommentModule } from './comment/comment.module';
 import { CryptedModule } from './crypted/crypted.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CryptedModule } from './crypted/crypted.module';
     ComicModule,
     CommentModule,
     CryptedModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

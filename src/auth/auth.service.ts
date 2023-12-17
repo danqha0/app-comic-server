@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserDto } from './dto/auth.dto';
+import { ForgotPassDto, LoginUserDto } from './dto/auth.dto';
 import * as mongoose from 'mongoose';
 
 @Injectable()
@@ -19,6 +19,7 @@ export class AuthService {
 
   async signUp(createUserDto: CreateUserDto): Promise<any> {
     try {
+      console.log('aaas');
       // Check if user exists
       const userExistsUsername = await this.userService.findByUsername(
         createUserDto.username,
@@ -63,6 +64,7 @@ export class AuthService {
   async signIn(data: LoginUserDto) {
     try {
       // Check if user exists
+      console.log('â');
       const user = await this.userService.findByUsername(data.username);
       if (!user)
         throw new UnauthorizedException('Username or Password is incorrect');
@@ -72,6 +74,40 @@ export class AuthService {
       );
       if (!passwordMatches)
         throw new UnauthorizedException('Username or Password is incorrect');
+      const tokens = await this.getTokens(user._id, user.email);
+      await this.updateRefreshToken(user._id, tokens.refreshToken);
+      return {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        password: user.password,
+        coin: user.coin,
+        follow: user.follow,
+        subscribe: user.subscribe,
+        vip: user.vip,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        ...tokens,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Username or Password is incorrect');
+    }
+  }
+
+  async forgotPass(data: ForgotPassDto) {
+    try {
+      // Check if user exists
+      console.log('â');
+      const user = await this.userService.findByUsername(data.username);
+      if (!user) throw new UnauthorizedException('Username not find');
+      const email = user.email;
+      const generateOTP = () => {
+        const min = 1000; // Giá trị nhỏ nhất của mã OTP (1000)
+        const max = 9999; // Giá trị lớn nhất của mã OTP (9999)
+        const otp = Math.floor(Math.random() * (max - min + 1)) + min;
+        return otp.toString();
+      };
       const tokens = await this.getTokens(user._id, user.email);
       await this.updateRefreshToken(user._id, tokens.refreshToken);
       return {

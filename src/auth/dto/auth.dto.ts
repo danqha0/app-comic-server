@@ -25,3 +25,7 @@ export class LoginUserDto {
   @IsNotEmpty() username: string;
   @IsNotEmpty() password: string;
 }
+
+export class ForgotPassDto {
+  @IsNotEmpty() username: string;
+}
