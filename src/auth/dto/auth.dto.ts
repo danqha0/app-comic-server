@@ -29,3 +29,9 @@ export class LoginUserDto {
 export class ForgotPassDto {
   @IsNotEmpty() username: string;
 }
+
+export class ChangePasswordDto {
+  @IsNotEmpty() oldPass: string;
+  @IsNotEmpty() newPass: string;
+  @IsNotEmpty() comfirmNewPass: string;
+}

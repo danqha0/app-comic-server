@@ -7,8 +7,9 @@ import { CreateUserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
-import { ForgotPassDto, LoginUserDto } from './dto/auth.dto';
+import { ForgotPassDto, LoginUserDto, ChangePasswordDto } from './dto/auth.dto';
 import * as mongoose from 'mongoose';
+import { use } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -64,7 +65,6 @@ export class AuthService {
   async signIn(data: LoginUserDto) {
     try {
       // Check if user exists
-      console.log('â');
       const user = await this.userService.findByUsername(data.username);
       if (!user)
         throw new UnauthorizedException('Username or Password is incorrect');
@@ -95,6 +95,30 @@ export class AuthService {
     }
   }
 
+  async changePass(id: mongoose.Types.ObjectId, data: ChangePasswordDto) {
+    try {
+      if (data.newPass != data.comfirmNewPass) {
+        throw new UnauthorizedException('Passwords do not match');
+      }
+      const user = await this.userService.findById(id);
+      if (!user)
+        throw new UnauthorizedException('Username or Password is incorrect');
+      const passwordMatches = await bcrypt.compareSync(
+        data.oldPass,
+        user.password,
+      );
+      if (!passwordMatches) {
+        throw new UnauthorizedException('Old Password is incorrect');
+      }
+      const hash = await this.hashData(data.newPass);
+      return await this.userService.update(id, {
+        password: hash,
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+  }
+
   async forgotPass(data: ForgotPassDto) {
     try {
       // Check if user exists
@@ -102,6 +126,7 @@ export class AuthService {
       const user = await this.userService.findByUsername(data.username);
       if (!user) throw new UnauthorizedException('Username not find');
       const email = user.email;
+
       const generateOTP = () => {
         const min = 1000; // Giá trị nhỏ nhất của mã OTP (1000)
         const max = 9999; // Giá trị lớn nhất của mã OTP (9999)
