@@ -13,6 +13,7 @@ import { ComicModule } from './comic/comic.module';
 import { CommentModule } from './comment/comment.module';
 import { CryptedModule } from './crypted/crypted.module';
 import { MailModule } from './mail/mail.module';
+import { CachingModule } from './caching/caching.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MailModule } from './mail/mail.module';
     CommentModule,
     CryptedModule,
     MailModule,
+    CachingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

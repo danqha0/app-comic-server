@@ -35,3 +35,8 @@ export class ChangePasswordDto {
   @IsNotEmpty() newPass: string;
   @IsNotEmpty() comfirmNewPass: string;
 }
+
+export class VerifyOTP {
+  @IsNotEmpty() OTP: string;
+  @IsNotEmpty() username: string;
+}
