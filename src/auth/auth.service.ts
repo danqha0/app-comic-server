@@ -156,10 +156,10 @@ export class AuthService {
 
         return await this.getToken(data.username);
       } else {
-        throw new UnauthorizedException('OTP is not valid');
+        throw new UnauthorizedException('OTP is not correct');
       }
     } catch (error) {
-      throw new UnauthorizedException('Username or Password is incorrect');
+      throw new UnauthorizedException('OTP is not valid');
     }
   }
 
