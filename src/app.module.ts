@@ -11,6 +11,9 @@ import { AuthorModule } from './author/author.module';
 import { ChapterModule } from './chapter/chapter.module';
 import { ComicModule } from './comic/comic.module';
 import { CommentModule } from './comment/comment.module';
+import { CryptedModule } from './crypted/crypted.module';
+import { MailModule } from './mail/mail.module';
+import { CachingModule } from './caching/caching.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { CommentModule } from './comment/comment.module';
     ChapterModule,
     ComicModule,
     CommentModule,
+    CryptedModule,
+    MailModule,
+    CachingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
