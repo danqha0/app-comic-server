@@ -21,8 +21,8 @@ import {
   ForgotPassDto,
   VerifyOTP,
 } from './dto/auth.dto';
-import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 import * as mongoose from 'mongoose';
+import { PassTokenStrategy } from './strategies/passToken.strategy';
 
 @Controller('auth')
 export class AuthController {
@@ -69,7 +69,7 @@ export class AuthController {
     this.authService.logout(req.user['sub']);
   }
 
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(PassTokenStrategy)
   @Post('changePassword')
   async changePassword(
     @requestt() req,
@@ -78,7 +78,7 @@ export class AuthController {
   ) {
     try {
       const tokens = await this.authService.changePass(
-        new mongoose.Types.ObjectId(req.user.id),
+        req.username,
         updateUser,
       );
       return res.status(HttpStatus.OK).json(tokens);

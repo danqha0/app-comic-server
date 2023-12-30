@@ -31,12 +31,18 @@ export class ForgotPassDto {
 }
 
 export class ChangePasswordDto {
+  @IsNotEmpty() token: string;
   @IsNotEmpty() oldPass: string;
   @IsNotEmpty() newPass: string;
   @IsNotEmpty() comfirmNewPass: string;
 }
 
 export class VerifyOTP {
+  @IsNotEmpty() OTP: string;
+  @IsNotEmpty() username: string;
+}
+
+export class ChangePass {
   @IsNotEmpty() OTP: string;
   @IsNotEmpty() username: string;
 }
