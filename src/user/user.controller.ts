@@ -63,7 +63,6 @@ export class UserController {
         });
       }
     }
-    return;
   }
 
   @UseGuards(AccessTokenGuard)

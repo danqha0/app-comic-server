@@ -103,12 +103,12 @@ export class AuthService {
     }
   }
 
-  async changePass(id: mongoose.Types.ObjectId, data: ChangePasswordDto) {
+  async changePass(username: string, data: ChangePasswordDto) {
     try {
       if (data.newPass != data.comfirmNewPass) {
         throw new UnauthorizedException('Passwords do not match');
       }
-      const user = await this.userService.findById(id);
+      const user = await this.userService.findByUsername(username);
       if (!user)
         throw new UnauthorizedException('Username or Password is incorrect');
       const passwordMatches = await bcrypt.compareSync(
@@ -119,7 +119,8 @@ export class AuthService {
         throw new UnauthorizedException('Old Password is incorrect');
       }
       const hash = await this.hashData(data.newPass);
-      return await this.userService.update(id, {
+
+      return await this.userService.update(user._id, {
         password: hash,
       });
     } catch (error) {

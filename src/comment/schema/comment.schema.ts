@@ -14,6 +14,9 @@ export class CommentSche {
   @Prop({ type: mongoose.Types.ObjectId, ref: 'User' })
   userId: mongoose.Types.ObjectId;
 
+  @Prop({ type: mongoose.Types.ObjectId, ref: 'Comic' })
+  comicId: mongoose.Types.ObjectId;
+
   @Prop({ type: String, required: true })
   content: string;
 
@@ -23,4 +26,4 @@ export class CommentSche {
 
 export const CommentSchema = SchemaFactory.createForClass(CommentSche);
 
-export type UserDocument = CommentSche & Document;
+export type CommentDocument = CommentSche & Document;
