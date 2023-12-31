@@ -5,12 +5,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { CommentDocument } from './schema/comment.schema';
+import { CommentDocument, CommentSche } from './schema/comment.schema';
 import { CreateCommentDto } from './dto/comment.dto';
 @Injectable()
 export class CommentService {
   constructor(
-    @InjectModel(Comment.name)
+    @InjectModel(CommentSche.name)
     private userModel: mongoose.Model<CommentDocument>,
   ) {}
 
