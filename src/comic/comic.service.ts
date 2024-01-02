@@ -128,4 +128,20 @@ export class ComicService {
       throw error;
     }
   }
+  async update(
+    id: mongoose.Types.ObjectId,
+    updateUserDto: any,
+  ): Promise<ComicDocument | null> {
+    try {
+      const user = await this.comicModel
+        .findByIdAndUpdate(id, updateUserDto, { new: true })
+        .exec();
+      if (!user) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      throw new NotFoundException('User not found');
+    }
+  }
 }

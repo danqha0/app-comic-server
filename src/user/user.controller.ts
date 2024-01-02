@@ -33,6 +33,7 @@ export class UserController {
   @Get('')
   async findById(@Request() req, @Res() res: Response) {
     try {
+      console.log('findById');
       const user = await this.usersService.findById(
         new mongoose.Types.ObjectId(req.user.id),
       );

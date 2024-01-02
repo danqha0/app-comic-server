@@ -33,6 +33,9 @@ export class User {
   @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'Comic' }] })
   subscribe: [mongoose.Types.ObjectId];
 
+  @Prop({ type: [{ type: mongoose.Types.ObjectId, ref: 'CommentSche' }] })
+  comments: [mongoose.Types.ObjectId];
+
   @Prop({ default: false })
   vip: boolean;
 
