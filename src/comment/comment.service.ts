@@ -11,12 +11,12 @@ import { CreateCommentDto } from './dto/comment.dto';
 export class CommentService {
   constructor(
     @InjectModel(CommentSche.name)
-    private userModel: mongoose.Model<CommentDocument>,
+    private commentModel: mongoose.Model<CommentDocument>,
   ) {}
 
   async create(createUserDto: CreateCommentDto): Promise<CommentDocument> {
     try {
-      const newUser = new this.userModel({
+      const newUser = new this.commentModel({
         ...createUserDto,
       });
 
@@ -28,7 +28,7 @@ export class CommentService {
 
   async findById(id: mongoose.Types.ObjectId): Promise<CommentDocument | null> {
     try {
-      const user = await this.userModel
+      const user = await this.commentModel
         .findById(id, '-createdAt -updatedAt -__v')
         .exec();
       if (!user) {
@@ -44,7 +44,7 @@ export class CommentService {
     ids: mongoose.Types.ObjectId[],
   ): Promise<CommentDocument[]> {
     try {
-      const users = await this.userModel
+      const users = await this.commentModel
         .find(
           {
             _id: { $in: ids },

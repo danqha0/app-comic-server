@@ -15,7 +15,7 @@ import { ComicService } from 'src/comic/comic.service';
 import { UserService } from 'src/user/user.service';
 import { Response } from 'express';
 import * as mongoose from 'mongoose';
-import { CreateCommentDto } from './dto/comment.dto';
+import { CreateCommentDto, PostCommentDto } from './dto/comment.dto';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 @Controller('comment')
 export class CommentController {
@@ -35,8 +35,9 @@ export class CommentController {
       const listCommentsId = await this.comicService.getComic(
         new mongoose.Types.ObjectId(id),
       );
-
-      const comments = this.commentService.findByListId(listCommentsId.comment);
+      const comments = await this.commentService.findByListId(
+        listCommentsId.comment,
+      );
       return res.status(HttpStatus.OK).json({
         comments: comments,
       });
@@ -56,7 +57,7 @@ export class CommentController {
   @UseGuards(AccessTokenGuard)
   @Post('')
   async AddComment(
-    @Body() body: CreateCommentDto,
+    @Body() body: PostCommentDto,
     @Request() req,
     @Res() res: Response,
   ) {
@@ -64,8 +65,25 @@ export class CommentController {
       const listCommentsId = await this.comicService.getComic(
         new mongoose.Types.ObjectId(body.comicId),
       );
+      const createComment: CreateCommentDto = { ...body, userId: req.user.id };
+      const comment = await this.commentService.create(createComment);
+      const user = await this.userService.findById(
+        new mongoose.Types.ObjectId(req.user.id),
+      );
+      user.comments.push(comment._id);
 
-      const comments = this.commentService.findByListId(listCommentsId.comment);
+      await this.userService.update(
+        new mongoose.Types.ObjectId(req.user.id),
+        user,
+      );
+      listCommentsId.comment.push(comment._id);
+      await this.comicService.update(
+        new mongoose.Types.ObjectId(body.comicId),
+        listCommentsId,
+      );
+      const comments = await this.commentService.findByListId(
+        listCommentsId.comment,
+      );
       return res.status(HttpStatus.OK).json({
         comments: comments,
       });
