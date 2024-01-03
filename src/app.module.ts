@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -14,6 +14,8 @@ import { CommentModule } from './comment/comment.module';
 import { CryptedModule } from './crypted/crypted.module';
 import { MailModule } from './mail/mail.module';
 import { CachingModule } from './caching/caching.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { EncryptResponseInterceptor } from './common/interceptors/encrypt.interceptor';
 
 @Module({
   imports: [
@@ -32,6 +34,19 @@ import { CachingModule } from './caching/caching.module';
     CachingModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: EncryptResponseInterceptor,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(EncryptResponseInterceptor)
+      .exclude({ path: '', method: RequestMethod.GET })
+      .forRoutes('*');
+  }
+}
