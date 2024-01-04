@@ -25,3 +25,9 @@ export class LoginUserDto {
   @IsNotEmpty() email: string;
   @IsNotEmpty() password: string;
 }
+
+export class ChangePasswordDto {
+  @IsNotEmpty() oldPass: string;
+  @IsNotEmpty() newPass: string;
+  @IsNotEmpty() reNewPass: string;
+}

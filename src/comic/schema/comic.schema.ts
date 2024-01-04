@@ -75,6 +75,9 @@ export class Comic {
 
   @Prop()
   totalRates: number;
+
+  @Prop({ type: Number, default: 0, min: 0 })
+  totalSub: number;
 }
 
 export const ComicSchema = SchemaFactory.createForClass(Comic);

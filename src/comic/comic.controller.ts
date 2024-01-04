@@ -1,24 +1,36 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   HttpStatus,
   Param,
+  Post,
+  Request,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ComicService } from './comic.service';
 import * as mongoose from 'mongoose';
 import { Response } from 'express';
 import { ChapterService } from 'src/chapter/chapter.service';
+import { UserService } from 'src/user/user.service';
+import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 @Controller('comics')
 export class ComicController {
   constructor(
     private readonly comicService: ComicService,
     private readonly chapterService: ChapterService,
+    private readonly userService: UserService,
   ) {}
 
+  @UseGuards(AccessTokenGuard)
   @Get(':id')
-  async getComicById(@Param('id') params: string, @Res() res: Response) {
+  async getComicById(
+    @Request() req,
+    @Param('id') params: string,
+    @Res() res: Response,
+  ) {
     try {
       const comic = await this.comicService.getComic(
         new mongoose.Types.ObjectId(params),
@@ -30,9 +42,12 @@ export class ComicController {
       const views = await Promise.all(viewPromises);
       const totalView = views.reduce((acc, view) => acc + view, 0);
       comic.totalViews = totalView;
-      // const chaptersComic = await this.chapterService.getChapterByListId(
-      //   comic.chapters,
-      // );
+      const user = await this.userService.findById(
+        new mongoose.Types.ObjectId(req.user.id),
+      );
+      const isSub = user.subscribe.includes(
+        new mongoose.Types.ObjectId(params),
+      );
       const response = {
         _id: comic._id,
         title: comic.title,
@@ -45,6 +60,7 @@ export class ComicController {
         author: comic.author,
         comment: comic.comment,
         totalViews: comic.totalViews,
+        isSub: isSub,
       };
 
       return res.status(HttpStatus.OK).json(response);
@@ -348,6 +364,43 @@ export class ComicController {
       return res.status(HttpStatus.OK).json(topSeriesComic);
     } catch (error) {
       console.log(error.message);
+      if (error instanceof BadRequestException) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message,
+        });
+      } else {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: 'Something went wrong',
+        });
+      }
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/subscribe')
+  async subscribeComic(
+    @Request() req,
+    @Body('comicId') comicId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const comicID = new mongoose.Types.ObjectId(comicId);
+      const [subscriber, comic] = await Promise.all([
+        this.userService.subscribe(
+          new mongoose.Types.ObjectId(req.user.id),
+          comicID,
+        ),
+        this.comicService.getComic(comicID),
+      ]);
+
+      if (subscriber) {
+        comic.totalSub++;
+      } else {
+        comic.totalSub--;
+      }
+      await this.comicService.update(comicID, comic);
+      return res.status(HttpStatus.OK).json(subscriber);
+    } catch (error) {
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           message: error.message,
