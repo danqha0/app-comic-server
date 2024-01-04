@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import * as elliptic from 'elliptic';
 import * as mongoose from 'mongoose';
 import { Crypted, CryptedDocument } from './schema/crypted.schema';
 import { CreateCryptedDto } from './dto/crypted.dto';
-const EC = elliptic.ec;
+import * as crypto from 'crypto';
 
 @Injectable()
 export class CryptedService {
@@ -12,28 +11,63 @@ export class CryptedService {
     @InjectModel(Crypted.name)
     private cryptedModel: mongoose.Model<CryptedDocument>,
   ) {}
-  private ec = new EC('curve25519');
 
-  generateKeyPair(): elliptic.ec.KeyPair {
-    return this.ec.genKeyPair();
+  private _id: mongoose.Types.ObjectId;
+
+  async generateKeyPair(): Promise<boolean> {
+    try {
+      const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        publicKeyEncoding: {
+          type: 'spki',
+          format: 'pem',
+        },
+        privateKeyEncoding: {
+          type: 'pkcs8',
+          format: 'pem',
+        },
+      });
+      const key = {
+        publicToken: publicKey.toString(),
+        privateToken: privateKey.toString(),
+      };
+      const createKey = await this.create(key);
+      this._id = createKey._id;
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  encrypt(data: string, publicKey: string): string {
-    const key = this.ec.keyFromPublic(publicKey, 'hex');
-    const encrypted = key.sign(data, 'base64'); // Sửa ở đây
-    return encrypted;
+  async create(createUserDto: CreateCryptedDto): Promise<CryptedDocument> {
+    try {
+      const newUser = new this.cryptedModel({
+        ...createUserDto,
+      });
+      return await newUser.save();
+    } catch (error) {
+      throw new BadRequestException('Error creating user');
+    }
+  }
+  public encrypt(publicKey: string, data: string): string {
+    const buffer = Buffer.from(data, 'utf8');
+    const encryptedData = crypto.publicEncrypt(publicKey, buffer);
+    return encryptedData.toString('base64');
   }
 
-  decrypt(encryptedData: string, privateKey: string): string {
-    const key = this.ec.keyFromPrivate(privateKey, 'hex');
-    const decrypted = key.decrypt(encryptedData, 'utf8'); // Sửa ở đây
-    return decrypted;
+  public decrypt(privateKey: string, encryptedData: string): string {
+    const buffer = Buffer.from(encryptedData, 'base64');
+    const decryptedData = crypto.privateDecrypt(privateKey, buffer);
+    return decryptedData.toString('utf8');
   }
 
-  async saveKey(createUserDto: CreateCryptedDto): Promise<CryptedDocument> {
-    const newUser = new this.cryptedModel({
-      ...createUserDto,
-    });
-    return await newUser.save();
+  async getPublicKey(): Promise<string> {
+    const publicKey = await this.cryptedModel.findById(this._id);
+    return publicKey.publicToken;
+  }
+
+  async getPrivate(): Promise<string> {
+    const privateKey = await this.cryptedModel.findById(this._id);
+    return privateKey.privateToken;
   }
 }

@@ -25,6 +25,7 @@ export class CommentController {
     private comicService: ComicService,
   ) {}
 
+  //@UseGuards(AccessTokenGuard)
   @Get('comic/:id')
   async GetCommentsComic(
     @Param('id') id: string,
@@ -38,8 +39,21 @@ export class CommentController {
       const comments = await this.commentService.findByListId(
         listCommentsId.comment,
       );
+      const data = await Promise.all(
+        comments.map(async (comment) => {
+          const { name, avatar } = await this.userService.findById(
+            new mongoose.Types.ObjectId(comment.userId),
+          );
+          return {
+            name,
+            avatar,
+            content: comment.content,
+            commentId: comment._id,
+          };
+        }),
+      );
       return res.status(HttpStatus.OK).json({
-        comments: comments,
+        comments: data,
       });
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -62,30 +76,77 @@ export class CommentController {
     @Res() res: Response,
   ) {
     try {
-      const listCommentsId = await this.comicService.getComic(
-        new mongoose.Types.ObjectId(body.comicId),
-      );
-      const createComment: CreateCommentDto = { ...body, userId: req.user.id };
-      const comment = await this.commentService.create(createComment);
-      const user = await this.userService.findById(
-        new mongoose.Types.ObjectId(req.user.id),
-      );
-      user.comments.push(comment._id);
+      const { id } = req.user;
+      const comicId = new mongoose.Types.ObjectId(body.comicId);
+      const userId = new mongoose.Types.ObjectId(id);
 
-      await this.userService.update(
-        new mongoose.Types.ObjectId(req.user.id),
-        user,
-      );
+      const createComment: CreateCommentDto = { ...body, userId: id };
+
+      const [listCommentsId, comment, user] = await Promise.all([
+        this.comicService.getComic(comicId),
+        this.commentService.create(createComment),
+        this.userService.findById(userId),
+      ]);
+
+      user.comments.push(comment._id);
       listCommentsId.comment.push(comment._id);
-      await this.comicService.update(
-        new mongoose.Types.ObjectId(body.comicId),
-        listCommentsId,
-      );
+
+      await Promise.all([
+        this.userService.update(userId, user),
+        this.comicService.update(comicId, listCommentsId),
+      ]);
+
       const comments = await this.commentService.findByListId(
         listCommentsId.comment,
       );
+      const data = await Promise.all(
+        comments.map(async (comment) => {
+          const { name, avatar } = await this.userService.findById(
+            new mongoose.Types.ObjectId(comment.userId),
+          );
+          return {
+            name,
+            avatar,
+            content: comment.content,
+            commentId: comment._id,
+          };
+        }),
+      );
+      return res.status(HttpStatus.OK).json({ comments: data });
+    } catch (error) {
+      const status =
+        error instanceof BadRequestException
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      return res.status(status).json({ message: error.message });
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('/getlistcomments')
+  async GetListComment(@Request() req, @Res() res: Response) {
+    try {
+      const user = await this.userService.findById(
+        new mongoose.Types.ObjectId(req.user.id),
+      );
+
+      const comments = await this.commentService.findByListId(user.comments);
+      const data = await Promise.all(
+        comments.map(async (comment) => {
+          const { _id, title, thumbImg } = await this.comicService.getComic(
+            new mongoose.Types.ObjectId(comment.comicId),
+          );
+          return {
+            comicId: _id,
+            title,
+            thumbImg,
+            content: comment.content,
+            commentId: comment._id,
+          };
+        }),
+      );
       return res.status(HttpStatus.OK).json({
-        comments: comments,
+        data: data,
       });
     } catch (error) {
       if (error instanceof BadRequestException) {

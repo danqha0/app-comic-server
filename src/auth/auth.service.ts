@@ -28,7 +28,6 @@ export class AuthService {
 
   async signUp(createUserDto: CreateUserDto): Promise<any> {
     try {
-      console.log('aaas');
       // Check if user exists
       const userExistsUsername = await this.userService.findByUsername(
         createUserDto.username,
@@ -103,12 +102,12 @@ export class AuthService {
     }
   }
 
-  async changePass(username: string, data: ChangePasswordDto) {
+  async changePass(id: mongoose.Types.ObjectId, data: ChangePasswordDto) {
     try {
-      if (data.newPass != data.comfirmNewPass) {
+      if (data.newPass != data.confirmNewPass) {
         throw new UnauthorizedException('Passwords do not match');
       }
-      const user = await this.userService.findByUsername(username);
+      const user = await this.userService.findById(id);
       if (!user)
         throw new UnauthorizedException('Username or Password is incorrect');
       const passwordMatches = await bcrypt.compareSync(

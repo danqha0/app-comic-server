@@ -97,28 +97,33 @@ export class UserService {
     }
   }
 
-  async subscribe(userId: mongoose.Types.ObjectId, comicID: string) {
+  async subscribe(
+    userId: mongoose.Types.ObjectId,
+    comicID: mongoose.Types.ObjectId,
+  ) {
     try {
+      let isSub = false;
+
       const user = await this.userModel.findOne(
         { _id: userId },
         '-createdAt -updatedAt -__v',
       );
+
       if (!user) {
         throw new NotFoundException('User not found');
       }
-
-      const subscribeIndex = user.subscribe.findIndex(
-        (comic) => comic.toString() === comicID,
+      const subscribeIndex = user.subscribe.findIndex((comic) =>
+        comic.equals(comicID),
       );
-
       if (subscribeIndex >= 0) {
         user.subscribe.splice(subscribeIndex, 1);
       } else {
-        user.subscribe.push(new mongoose.Types.ObjectId(comicID));
+        user.subscribe.push(comicID);
+        isSub = true;
       }
 
-      const updateUser = await user.save();
-      return updateUser;
+      await user.save();
+      return isSub;
     } catch (error) {
       throw new BadRequestException('Error subscribing to comic');
     }

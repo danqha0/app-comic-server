@@ -31,10 +31,9 @@ export class ForgotPassDto {
 }
 
 export class ChangePasswordDto {
-  @IsNotEmpty() token: string;
   @IsNotEmpty() oldPass: string;
   @IsNotEmpty() newPass: string;
-  @IsNotEmpty() comfirmNewPass: string;
+  @IsNotEmpty() confirmNewPass: string;
 }
 
 export class VerifyOTP {

@@ -15,9 +15,9 @@ import {
 import { Response } from 'express';
 
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 import * as mongoose from 'mongoose';
+import { UpdateUserDto, ChangePasswordDto } from 'src/auth/dto/auth.dto';
 
 @Controller('users')
 export class UserController {
@@ -33,7 +33,6 @@ export class UserController {
   @Get('')
   async findById(@Request() req, @Res() res: Response) {
     try {
-      console.log('findById');
       const user = await this.usersService.findById(
         new mongoose.Types.ObjectId(req.user.id),
       );
@@ -82,46 +81,14 @@ export class UserController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post('/subscribe')
-  async subscribeComic(
-    @Request() req,
-    @Body('id') comicId: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const subscriber = await this.usersService.subscribe(
-        new mongoose.Types.ObjectId(req.user.id),
-        comicId,
-      );
-
-      return res.status(HttpStatus.OK).json(subscriber);
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          message: error.message,
-        });
-      } else {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          message: 'Something went wrong',
-        });
-      }
-    }
-  }
-
-  @UseGuards(AccessTokenGuard)
   @Post('/resetpasssord')
   async resetPassword(
     @Request() req,
-    @Body('id') comicId: string,
+    @Body() body: ChangePasswordDto,
     @Res() res: Response,
   ) {
     try {
-      const subscriber = await this.usersService.subscribe(
-        new mongoose.Types.ObjectId(req.user.id),
-        comicId,
-      );
-
-      return res.status(HttpStatus.OK).json(subscriber);
+      return res.status(HttpStatus.OK).json({ message: 'Success' });
     } catch (error) {
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({
