@@ -25,6 +25,7 @@ export class CommentController {
     private comicService: ComicService,
   ) {}
 
+  //@UseGuards(AccessTokenGuard)
   @Get('comic/:id')
   async GetCommentsComic(
     @Param('id') id: string,
@@ -98,13 +99,65 @@ export class CommentController {
       const comments = await this.commentService.findByListId(
         listCommentsId.comment,
       );
-      return res.status(HttpStatus.OK).json({ comments });
+      const data = await Promise.all(
+        comments.map(async (comment) => {
+          const { name, avatar } = await this.userService.findById(
+            new mongoose.Types.ObjectId(comment.userId),
+          );
+          return {
+            name,
+            avatar,
+            content: comment.content,
+            commentId: comment._id,
+          };
+        }),
+      );
+      return res.status(HttpStatus.OK).json({ comments: data });
     } catch (error) {
       const status =
         error instanceof BadRequestException
           ? HttpStatus.BAD_REQUEST
           : HttpStatus.INTERNAL_SERVER_ERROR;
       return res.status(status).json({ message: error.message });
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('/getlistcomments')
+  async GetListComment(@Request() req, @Res() res: Response) {
+    try {
+      const user = await this.userService.findById(
+        new mongoose.Types.ObjectId(req.user.id),
+      );
+
+      const comments = await this.commentService.findByListId(user.comments);
+      const data = await Promise.all(
+        comments.map(async (comment) => {
+          const { _id, title, thumbImg } = await this.comicService.getComic(
+            new mongoose.Types.ObjectId(comment.comicId),
+          );
+          return {
+            comicId: _id,
+            title,
+            thumbImg,
+            content: comment.content,
+            commentId: comment._id,
+          };
+        }),
+      );
+      return res.status(HttpStatus.OK).json({
+        data: data,
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message,
+        });
+      } else {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: 'Something went wrong',
+        });
+      }
     }
   }
 }

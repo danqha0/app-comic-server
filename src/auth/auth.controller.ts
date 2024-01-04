@@ -23,6 +23,7 @@ import {
 } from './dto/auth.dto';
 import * as mongoose from 'mongoose';
 import { PassTokenStrategy } from './strategies/passToken.strategy';
+import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -69,7 +70,7 @@ export class AuthController {
     this.authService.logout(req.user['sub']);
   }
 
-  @UseGuards(PassTokenStrategy)
+  @UseGuards(AccessTokenGuard)
   @Post('changePassword')
   async changePassword(
     @requestt() req,
@@ -78,10 +79,24 @@ export class AuthController {
   ) {
     try {
       const tokens = await this.authService.changePass(
-        req.username,
+        new mongoose.Types.ObjectId(req.user.id),
         updateUser,
       );
-      return res.status(HttpStatus.OK).json(tokens);
+      return res.status(HttpStatus.OK).json({
+        _id: tokens._id,
+        username: tokens.username,
+        name: tokens.name,
+        email: tokens.email,
+        password: tokens.password,
+        coin: tokens.coin,
+        follow: tokens.follow,
+        subscribe: tokens.subscribe,
+        vip: tokens.vip,
+        avatar: tokens.avatar,
+        isActive: tokens.isActive,
+        accessToken: '',
+        refreshToken: '',
+      });
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return res.status(HttpStatus.UNAUTHORIZED).json({
@@ -135,7 +150,7 @@ export class AuthController {
     }
   }
 
-  @Post('forgotPass/changePassword')
+  @Post('forgotPass/changepassword')
   async changePasswordForgot(
     @Body() updateUser: ChangePasswordDto,
     @Res() res: Response,

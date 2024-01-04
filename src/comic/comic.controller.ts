@@ -384,6 +384,7 @@ export class ComicController {
     @Res() res: Response,
   ) {
     try {
+      console.log(comicId);
       const comicID = new mongoose.Types.ObjectId(comicId);
       const [subscriber, comic] = await Promise.all([
         this.userService.subscribe(
@@ -399,7 +400,7 @@ export class ComicController {
         comic.totalSub--;
       }
       await this.comicService.update(comicID, comic);
-      return res.status(HttpStatus.OK).json(subscriber);
+      return res.status(HttpStatus.OK).json({ data: subscriber });
     } catch (error) {
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({
@@ -410,6 +411,37 @@ export class ComicController {
           message: 'Something went wrong',
         });
       }
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('/get/getsub')
+  async GetListSub(@Request() req, @Res() res: Response) {
+    try {
+      const userId = new mongoose.Types.ObjectId(req.user.id);
+      const user = await this.userService.findById(userId);
+
+      const listSub = await Promise.all(
+        user.subscribe.map((commentId) =>
+          this.comicService
+            .getComic(commentId)
+            .then(({ _id, title, thumbImg }) => ({
+              id: _id,
+              title,
+              thumbImg,
+            })),
+        ),
+      );
+
+      return res.status(HttpStatus.OK).json({ listSub });
+    } catch (error) {
+      return res
+        .status(
+          error instanceof BadRequestException
+            ? HttpStatus.BAD_REQUEST
+            : HttpStatus.INTERNAL_SERVER_ERROR,
+        )
+        .json({ message: error.message });
     }
   }
 }
