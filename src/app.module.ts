@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  RequestMethod,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -17,6 +22,7 @@ import { CachingModule } from './caching/caching.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EncryptResponseInterceptor } from './common/interceptors/encrypt.interceptor';
 
+//@UseInterceptors(EncryptResponseInterceptor)
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -36,17 +42,10 @@ import { EncryptResponseInterceptor } from './common/interceptors/encrypt.interc
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: EncryptResponseInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: EncryptResponseInterceptor,
+    // },
   ],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(EncryptResponseInterceptor)
-      .exclude({ path: '', method: RequestMethod.GET })
-      .forRoutes('*');
-  }
-}
+export class AppModule {}

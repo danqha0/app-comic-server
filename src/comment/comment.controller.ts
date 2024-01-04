@@ -38,8 +38,22 @@ export class CommentController {
       const comments = await this.commentService.findByListId(
         listCommentsId.comment,
       );
+      const data = await Promise.all(
+        comments.map(async (comment) => {
+          const { name, avatar } = await this.userService.findById(
+            new mongoose.Types.ObjectId(comment.userId),
+          );
+          return {
+            name,
+            avatar,
+            content: comment.content,
+            commentId: comment._id,
+          };
+        }),
+      );
+      console.log(data);
       return res.status(HttpStatus.OK).json({
-        comments: comments,
+        comments: data,
       });
     } catch (error) {
       if (error instanceof BadRequestException) {

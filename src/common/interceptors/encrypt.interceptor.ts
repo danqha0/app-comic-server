@@ -14,14 +14,15 @@ export class EncryptResponseInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      map((data) => {
-        const { publicKey } = this.cryptedService.generateKeyPair();
-        console.log(publicKey);
+      map(async (data) => {
+        const publicKey = await this.cryptedService.getPublicKey();
+
         const encryptedData = this.cryptedService.encrypt(
-          JSON.stringify(data),
           publicKey,
+          JSON.stringify(data),
         );
-        return encryptedData;
+
+        return JSON.parse(encryptedData);
       }),
     );
   }
